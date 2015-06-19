@@ -1,55 +1,91 @@
 package ru.knaur.oxana.znamen;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
 
-public class SwingWindiow {
-    private JButton start;
-    private JButton edit;
-    private JButton clear;
-    private JPanel panel;
+public class ActionButton implements ActionListener {
+    public static File file;
 
-    public void init() {
-        try {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Открыть")) {
+            JFileChooser fileopen = new JFileChooser();
+            fileopen.setFileFilter(new MyCustomFilter());
+            fileopen.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            int ret = fileopen.showDialog(null, "Открыть файл");
+            fileopen.setFileHidingEnabled(false);
 
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); // выбор скрина из стиля ОС
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            if (ret == JFileChooser.APPROVE_OPTION) {
+                file = fileopen.getSelectedFile();
+            }
+        } else if (e.getActionCommand().equals("Преобразовать")) {
+            if (file != null) {
+                String str = file.getAbsolutePath();
+                String[] path = str.split(".txt");
+                Scanner scanner = null;
+                try {
+                    scanner = new Scanner(new File(str));
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
+                }
+                FileWriter writer = null;
+                try {
+                    writer = new FileWriter(path[0] + "New.txt");
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                //  scanner.close();
+                String[] stringsZn;
+                char[] a;
+                char[] c;
+                char[] d;
+
+
+                while (scanner.hasNext()) {
+                    String s = scanner.nextLine();
+                    stringsZn = s.split(" ");
+                    for (String subS : stringsZn) {
+                        if (subS.equals("")) continue;
+                        subS = subS.replaceAll("[ ]", "");
+                        subS = subS.replaceAll("\\\\", "\\\\\\\\");
+                        try {
+                            writer.write("\"" + subS + "\"");
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
+                try {
+                    writer.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                scanner.close();
+            }
+
+
+        } else if (e.getActionCommand().equals("Очистить")) {
+            file = null;
         }
-        start = new JButton("Открыть");
-        start.setSize(190, 30);
-        start.setAlignmentX(Component.CENTER_ALIGNMENT);
-        start.addActionListener(new ActionButton());
-        edit = new JButton("Преобразовать");
-        edit.setSize(190, 30);
-        edit.setAlignmentX(Component.CENTER_ALIGNMENT);
-        edit.addActionListener(new ActionButton());
-        clear = new JButton("Очистить");
-        clear.setSize(190, 30);
-        clear.setAlignmentX(Component.CENTER_ALIGNMENT);
-        clear.addActionListener(new ActionButton());
-
-
-        panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        panel.add(start);
-        panel.add(edit);
-        panel.add(clear);
-
-
-        JFrame jf = new JFrame();
-        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jf.setSize(200, 120);
-        jf.add(panel);
-        jf.setVisible(true);
     }
 
+    private class MyCustomFilter extends javax.swing.filechooser.FileFilter {
+        @Override
+        public boolean accept(File file) {
+            // Allow only directories, or files with ".txt" extension
+            return file.isDirectory() || file.getAbsolutePath().endsWith(".txt");
+        }
+        @Override
+        public String getDescription() {
+            // This description will be displayed in the dialog,
+            // hard-coded = ugly, should be done via I18N
+            return "Text documents (*.txt)";
+        }
+    }
 }
