@@ -1,2 +1,2 @@
 # znamenny
-Перекодирование текстовых файлов для набора певческих православных богослужебных книг в крюковой нотации - знаменное пение
+Recoding text files for a set of singing Orthodox liturgical books in the hook notation - znamenny chant
